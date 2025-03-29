@@ -34,3 +34,55 @@ class ActivityLog(Base):
     job_id = Column(Integer, nullable=False)
     action_type = Column(String(50), nullable=False)
     timestamp = Column(DateTime, nullable=False)
+
+class User(Base):
+    __tablename__ = "users"
+    
+    user_id = Column(Integer, primary_key=True, index=True)
+    email = Column(String(100), nullable=False)
+    password = Column(String(500), nullable=False)
+    first_name = Column(String(50), nullable=False)
+    last_name = Column(String(50), nullable=False)
+    gender = Column(Integer, nullable=True)  # Assuming tinyint(1) maps to Integer
+    dob = Column(DateTime, nullable=True)
+    phone_number = Column(String(20), nullable=True)
+    address = Column(String(1000), nullable=True)
+    province_id = Column(Integer, nullable=True)
+    district_id = Column(Integer, nullable=True)
+    ward_id = Column(Integer, nullable=True)
+    is_active = Column(Integer, nullable=False)  # Assuming tinyint(1) maps to Integer
+    reason_blocked = Column(String(1000), nullable=True)
+    role_id = Column(Integer, nullable=True)
+    created_at = Column(DateTime, nullable=False)
+    updated_at = Column(DateTime, nullable=False)
+    google_account_id = Column(String(255), nullable=True)
+class Employer(Base):
+    __tablename__ = "employers"
+    
+    employer_id = Column(Integer, primary_key=True, index=True)
+    company_name = Column(String(500), nullable=False)
+    company_address = Column(String(1000), nullable=True)
+    company_logo = Column(String(1000), nullable=True)
+    company_email = Column(String(100), nullable=False)
+    company_website = Column(String(1000), nullable=True)
+    company_description = Column(String(10000), nullable=True)  
+    background_image = Column(String(1000), nullable=True)
+    video_introduction = Column(String(1000), nullable=True)
+    company_size = Column(String(100), nullable=True)
+    approval_status = Column(String(50), nullable=False)  
+    rejected_reason = Column(String(500), nullable=True)
+    business_certificate = Column(String(1000), nullable=True)
+    created_at = Column(DateTime, nullable=False)
+    updated_at = Column(DateTime, nullable=False)
+    industry_id = Column(Integer, nullable=True)
+class Student(Base):
+    __tablename__ = "students"
+    
+    student_id = Column(Integer, primary_key=True, index=True)
+    university_email = Column(String(255), nullable=False)
+    year = Column(Integer, nullable=True)
+    profile_image = Column(String(1000), nullable=True)
+    is_find = Column(Integer, nullable=False)  # Assuming tinyint(1) maps to Integer
+    created_at = Column(DateTime, nullable=False)
+    updated_at = Column(DateTime, nullable=False)
+    category_id = Column(Integer, nullable=True)

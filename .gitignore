@@ -3,3 +3,5 @@ venv/
 *.log 
 output/
 config.json
+__pycache__/
+*.pyc

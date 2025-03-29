@@ -6,3 +6,6 @@ sqlalchemy
 requests
 sqlalchemy
 pymysql 
+uvicorn
+fastapi
+dotenv

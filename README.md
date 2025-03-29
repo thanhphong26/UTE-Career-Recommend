@@ -28,3 +28,5 @@
     ```bash
     deactivate
     ```
+5. Run 
+    uvicorn main:app --reload --port 8000
