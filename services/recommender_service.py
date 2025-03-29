@@ -10,18 +10,22 @@ class RecommenderManager:
     def get_recommender(db: Session):
         # Fetch jobs from database
         jobs = db.query(Job).all()
+        # Fetch employers from database
+        employers = {employer.employer_id: employer.company_logo for employer in db.query(Job.employer.property.mapper.class_).all()}
+        company_names = {employer.employer_id: employer.company_name for employer in db.query(Job.employer.property.mapper.class_).all()}
         jobs_data = [
             {
-                "job_id": job.job_id,
-                "job_title": job.job_title,
-                "job_description": job.job_description,
-                "job_requirements": job.job_requirements,
-                "job_location": job.job_location,
-                "job_min_salary": job.job_min_salary,
-                "job_max_salary": job.job_max_salary
+            "job_id": job.job_id,
+            "job_title": job.job_title,
+            "logo": employers.get(job.employer_id, None),
+            "company_name": company_names.get(job.employer_id, None),
+            "job_description": job.job_description,
+            "job_location": job.job_location,
+            "job_min_salary": job.job_min_salary,
+            "job_max_salary": job.job_max_salary
             } for job in jobs
         ]
-        
+        print("Jobs Data:", jobs_data)
         # Fetch ratings from database
         ratings = db.query(Rating).all()
         ratings_data = [

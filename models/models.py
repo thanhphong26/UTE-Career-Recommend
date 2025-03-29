@@ -1,11 +1,13 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime
 from .database import Base
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
 
 class Job(Base):
     __tablename__ = "jobs"
     
     job_id = Column(Integer, primary_key=True, index=True)
-    employer_id = Column(Integer)
+    employer_id = Column(Integer, ForeignKey("employers.employer_id"), nullable=False)
     category_id = Column(Integer)
     level_id = Column(Integer)
     job_title = Column(String(255), nullable=False)
@@ -21,6 +23,8 @@ class Job(Base):
     package_id = Column(Integer, nullable=True)
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
+    employer = relationship("Employer", back_populates="jobs")  # Define relationship
+
 class Rating(Base):
     __tablename__ = "saved_jobs"
     student_id = Column(Integer, primary_key=True, index=True)
@@ -75,6 +79,7 @@ class Employer(Base):
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
     industry_id = Column(Integer, nullable=True)
+    jobs = relationship("Job", back_populates="employer")  # Kết nối với Job
 class Student(Base):
     __tablename__ = "students"
     
@@ -82,7 +87,23 @@ class Student(Base):
     university_email = Column(String(255), nullable=False)
     year = Column(Integer, nullable=True)
     profile_image = Column(String(1000), nullable=True)
-    is_find = Column(Integer, nullable=False)  # Assuming tinyint(1) maps to Integer
+    is_find = Column(Integer, nullable=False)  
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
     category_id = Column(Integer, nullable=True)
+class Skills:
+    __tablename__ = "skills"
+    
+    skill_id = Column(Integer, primary_key=True, index=True)
+    skill_name = Column(String(255), nullable=False)
+    skill_description = Column(String(1000), nullable=True)
+    created_at = Column(DateTime, nullable=False)
+    updated_at = Column(DateTime, nullable=False)
+class JobSkill:
+    __tablename__ = "job_skills"
+    
+    job_skill_id = Column(Integer, primary_key=True, index=True)
+    job_id = Column(Integer, nullable=False)
+    skill_id = Column(Integer, nullable=False)
+    created_at = Column(DateTime, nullable=False)
+    updated_at = Column(DateTime, nullable=False)

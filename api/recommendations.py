@@ -31,11 +31,14 @@ async def get_recommendations(
                 detailed_rec = {
                     **rec,
                     "job_title": job_details['job_title'],
+                    "logo": job_details['logo'],
+                    "company_name": job_details['company_name'],
+                    "job_location": job_details['job_location'], 
                     "job_description": job_details['job_description'],
-                    "job_requirements": job_details['job_requirements'],
                     "job_min_salary": job_details['job_min_salary'],
                     "job_max_salary": job_details['job_max_salary'],
                 }
+                print(f"Detailed Recommendation: {detailed_rec}")
                 detailed_recommendations.append(detailed_rec)
         
         return detailed_recommendations

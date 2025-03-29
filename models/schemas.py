@@ -33,7 +33,7 @@ class RecommendationResponse(BaseModel):
     job_id: int
     score: float
     job_title: str
-    job_description: str
-    job_requirements: str
+    logo: str 
+    company_name: str
     job_min_salary: float
     job_max_salary: float
