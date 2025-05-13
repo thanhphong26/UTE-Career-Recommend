@@ -73,7 +73,6 @@ class SimpleCVAnalyzer:
         'digital marketing', 'e-commerce', 'telecommunications', 'healthcare it', 'fintech',
         'edtech', 'business intelligence'
     ]
-    
     def __init__(self, temp_upload_dir: str = 'uploads'):
         """
         Initialize the simplified CV analyzer
@@ -85,17 +84,33 @@ class SimpleCVAnalyzer:
         
         # Convert skill list to lowercase and create a set for efficient lookups
         self.skill_set = set(skill.lower() for skill in self.TECHNICAL_SKILLS)
+          # Set Tesseract executable path if on Windows
+        # Update this path according to your actual Tesseract installation location
+        if os.name == 'nt':  # Windows
+            # Cấu hình đường dẫn Tesseract cụ thể
+            tesseract_path = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+            if os.path.exists(tesseract_path):
+                try:                    
+                    import pytesseract
+                    pytesseract.pytesseract.tesseract_cmd = tesseract_path
+                    logger.info(f"Tesseract OCR path set to: {tesseract_path}")
+                except ImportError:
+                    logger.warning("pytesseract not installed. OCR functions will not be available.")
+                    
+        # Đặt đường dẫn cho Poppler
+        self.poppler_path = r'D:\Python-Lib\Release-24.08.0-0\poppler-24.08.0\Library\bin'
+
     
     def extract_text_from_pdf(self, file_path: str) -> str:
         """
-        Extract text from PDF files using PyPDF2
+        Extract text from PDF files using PyPDF2 and OCR for scanned PDFs
         
         :param file_path: Path to the PDF file
         :return: Extracted text
         """
         text = ""
         
-        # Try PyPDF2
+        # Try PyPDF2 first (for text-based PDFs)
         try:
             with open(file_path, 'rb') as file:
                 reader = PyPDF2.PdfReader(file)
@@ -105,6 +120,52 @@ class SimpleCVAnalyzer:
                         text += page_text + "\n"
         except Exception as e:
             logger.warning(f"PyPDF2 extraction failed: {e}")
+        
+        # If regular extraction fails or returns very little text, try OCR
+        if not text or len(text.strip()) < 100:  # Consider it a scanned PDF if text is too short
+            try:
+                import pytesseract
+                from pdf2image import convert_from_path
+                from PIL import Image
+                # Sử dụng đường dẫn Poppler đã được cấu hình trong __init__
+                poppler_path = self.poppler_path
+                
+                try:
+                    # Convert PDF to images
+                    if poppler_path:
+                        logger.info(f"Sử dụng Poppler từ: {poppler_path}")
+                        pages = convert_from_path(file_path, 150, poppler_path=poppler_path)
+                    else:
+                        # Thử sử dụng PATH mặc định
+                        logger.info("Thử sử dụng Poppler từ PATH hệ thống")
+                        pages = convert_from_path(file_path, 150)
+                except Exception as e:
+                    raise Exception("Poppler không khả dụng") from e
+                
+                # Process each page with OCR
+                ocr_texts = []
+                for i, page in enumerate(pages):
+                    try:# Apply OCR with support for Vietnamese
+                        # Try Vietnamese first for better results with Vietnamese documents
+                        page_text_vi = pytesseract.image_to_string(page, lang='vie')
+                        page_text_en = pytesseract.image_to_string(page, lang='eng')
+                        
+                        # Choose the better result (usually the one with more content)
+                        page_text = page_text_vi if len(page_text_vi) > len(page_text_en) else page_text_en
+                        
+                        if page_text:
+                            ocr_texts.append(page_text)
+                        logger.info(f"OCR completed for page {i+1}")
+                    except Exception as e:
+                        logger.warning(f"OCR failed for page {i+1}: {e}")
+                
+                if ocr_texts:
+                    # If OCR was successful, use OCR text instead
+                    text = "\n".join(ocr_texts)
+            except ImportError as e:
+                logger.error(f"OCR libraries not available: {e}. Install pytesseract and pdf2image for OCR support.")
+            except Exception as e:
+                logger.error(f"OCR extraction failed: {e}")
                 
         return text
     
@@ -351,7 +412,7 @@ class SimpleCVAnalyzer:
                 # Extract date ranges
                 date_ranges = []
                 try:
-                    date_ranges = re.findall(r'(?:((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?)\s*(19|20)\d{2})\s*(?:-|–|to)\s*(?:((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?)\s*(19|20)\d{2})|(?:(19|20)\d{2})\s*(?:-|–|to)\s*(?:(19|20)\d{2})', experience_text)
+                    date_ranges = re.findall(r'(?:((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?)\s*(19|20)\d{2})\s*(?:-|–|to)\s*(?:((?:Jan|Feb|Mar|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?)\s*(19|20)\d{2})|(?:(19|20)\d{2})\s*(?:-|–|to)\s*(?:(19|20)\d{2})', experience_text)
                 except Exception as e:
                     logger.warning(f"Error parsing date ranges: {e}")
                 
