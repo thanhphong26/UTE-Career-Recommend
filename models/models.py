@@ -146,3 +146,12 @@ class ResumeCV(Base):
     is_active = Column(Integer, nullable=False)
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
+class Application(Base):
+    __tablename__ = "applications"
+    
+    application_id = Column(Integer, primary_key=True, index=True)
+    job_id = Column(Integer, ForeignKey("jobs.job_id"), nullable=False)
+    resume_id = Column(Integer, ForeignKey("resumes.resume_id"), nullable=True)
+    application_status = Column(String(50), nullable=False)
+    created_at = Column(DateTime, nullable=False)
+    updated_at = Column(DateTime, nullable=False)

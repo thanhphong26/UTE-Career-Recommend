@@ -11,7 +11,8 @@ from models.schemas import (
     CVAnalysisResponse, 
     CVRecommendationRequest, 
     CVRecommendationResponse,
-    CVJobMatchResponse
+    CVJobMatchResponse,
+    ResumeRecommendationResponse
 )
 from services.cv_analyzer_service import EnhancedCVAnalyzer, EnhancedCVRecommender
 
@@ -297,4 +298,100 @@ async def get_available_skills():
         raise HTTPException(
             status_code=500,
             detail=f"Error retrieving skills list: {str(e)}"
+        )
+
+@router.get("/job/{job_id}/matching_resumes", response_model=ResumeRecommendationResponse)
+async def recommend_resumes_for_job(
+    job_id: int,
+    limit: Optional[int] = 10,
+    db: Session = Depends(get_db)
+):
+    """
+    Lọc n CV phù hợp nhất với một job từ tổng số CV đã apply vào job
+    """
+    try:
+        from models.models import Job, Application, ResumeCV, Student
+        from sqlalchemy import desc
+
+        # Kiểm tra job có tồn tại không
+        job = db.query(Job).filter(Job.job_id == job_id).first()
+        if not job:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Job with ID {job_id} not found"
+            )
+
+        # Lấy danh sách các CV đã apply vào job
+        applications = db.query(Application).filter(
+            Application.job_id == job_id
+        ).all()
+
+        if not applications:
+            return {"recommendations": []}
+
+        # Lấy danh sách resume_id từ applications
+        resume_ids = [app.resume_id for app in applications if app.resume_id]
+        
+        if not resume_ids:
+            return {"recommendations": []}
+
+        # Phân tích matching score cho từng CV
+        resume_matches = []
+        
+        for resume_id in resume_ids:
+            # Truy vấn thông tin CV từ database
+            resume = db.query(ResumeCV).filter(ResumeCV.resume_id == resume_id).first()
+            if not resume:
+                continue
+
+            # Phân tích CV để lấy thông tin
+            cv_analysis = cv_analyzer.analyze_cv(resume.resume_file)
+            if not cv_analysis.get('success', False):
+                continue
+
+            # Chuẩn bị dữ liệu job để matching
+            job_desc = f"{job.job_title} {job.job_description or ''} {job.job_requirements or ''}"
+            
+            # Lấy danh sách kỹ năng của job
+            job_skills = cv_recommender.get_job_skills(job_id, db)
+            if not job_skills and job.job_requirements:
+                job_skills = cv_recommender.extract_skills_from_job(job.job_requirements)
+            
+            # Tính toán match score giữa CV và job
+            match_result = cv_recommender.match_cv_to_job(cv_analysis, job_desc, job_skills)
+            
+            # Lấy thông tin student
+            student = db.query(Student).filter(Student.student_id == resume.student_id).first()
+            student_name = f"{student.university_email}" if student else "Unknown"
+            
+            # Tạo resume match response
+            resume_match = {
+                'resume_id': resume_id,
+                'student_name': student_name,
+                'match_score': match_result['match_score'],
+                'skill_match_score': match_result['skill_match_score'],
+                'content_similarity': match_result['content_similarity'],
+                'matched_skills': match_result['matched_skills'],
+                'missing_skills': match_result['missing_skills'],
+                'resume_title': resume.resume_title,
+                'reason': cv_recommender._generate_match_reason(match_result)
+            }
+            
+            resume_matches.append(resume_match)
+
+        # Sắp xếp theo match_score và giới hạn số lượng
+        sorted_matches = sorted(resume_matches, key=lambda x: x['match_score'], reverse=True)[:limit]
+        
+        # Tạo response
+        response = {"recommendations": sorted_matches}
+        logger.info(f"Found {len(sorted_matches)} matching resumes for job {job_id}")
+        return response
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error recommending resumes for job: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error recommending resumes for job: {str(e)}"
         )

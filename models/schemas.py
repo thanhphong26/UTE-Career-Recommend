@@ -78,6 +78,20 @@ class CVJobMatchResponse(BaseModel):
     job_min_salary: float
     job_max_salary: float
     reason: str
+
+class ResumeJobMatchResponse(BaseModel):
+    resume_id: int
+    student_name: Optional[str] = None
+    match_score: float
+    skill_match_score: Optional[float] = None
+    content_similarity: Optional[float] = None
+    matched_skills: List[str]
+    missing_skills: List[str]
+    resume_title: str
+    reason: str
     
 class CVRecommendationResponse(BaseModel):
     recommendations: List[CVJobMatchResponse]
+
+class ResumeRecommendationResponse(BaseModel):
+    recommendations: List[ResumeJobMatchResponse]
