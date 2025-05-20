@@ -81,6 +81,7 @@ class CVJobMatchResponse(BaseModel):
 
 class ResumeJobMatchResponse(BaseModel):
     resume_id: int
+    application_id: Optional[int] = None
     student_name: Optional[str] = None
     match_score: float
     skill_match_score: Optional[float] = None

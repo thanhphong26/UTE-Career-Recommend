@@ -87,7 +87,7 @@ class Employer(Base):
 class Student(Base):
     __tablename__ = "students"
     
-    student_id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("users.user_id"), primary_key=True, index=True)
     university_email = Column(String(255), nullable=False)
     year = Column(Integer, nullable=True)
     profile_image = Column(String(1000), nullable=True)
@@ -95,6 +95,7 @@ class Student(Base):
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
     category_id = Column(Integer, ForeignKey("job_categories.category_id"), nullable=True)
+    user = relationship("User")
 
 class Skills(Base):
     __tablename__ = "skills"

@@ -327,10 +327,9 @@ async def recommend_resumes_for_job(
         ).all()
 
         if not applications:
-            return {"recommendations": []}
-
-        # Lấy danh sách resume_id từ applications
-        resume_ids = [app.resume_id for app in applications if app.resume_id]
+            return {"recommendations": []}        # Lấy danh sách resume_id từ applications và map với application_id tương ứng
+        resume_app_map = {app.resume_id: app.application_id for app in applications if app.resume_id}
+        resume_ids = list(resume_app_map.keys())
         
         if not resume_ids:
             return {"recommendations": []}
@@ -343,6 +342,9 @@ async def recommend_resumes_for_job(
             resume = db.query(ResumeCV).filter(ResumeCV.resume_id == resume_id).first()
             if not resume:
                 continue
+                
+            # Lấy application_id tương ứng với resume_id
+            application_id = resume_app_map.get(resume_id)
 
             # Phân tích CV để lấy thông tin
             cv_analysis = cv_analyzer.analyze_cv(resume.resume_file)
@@ -362,11 +364,11 @@ async def recommend_resumes_for_job(
             
             # Lấy thông tin student
             student = db.query(Student).filter(Student.student_id == resume.student_id).first()
-            student_name = f"{student.university_email}" if student else "Unknown"
-            
-            # Tạo resume match response
+            student_name = f"{student.user.first_name} {student.user.last_name}" if student else "Unknown"
+              # Tạo resume match response
             resume_match = {
                 'resume_id': resume_id,
+                'application_id': application_id,  # Thêm application_id vào response
                 'student_name': student_name,
                 'match_score': match_result['match_score'],
                 'skill_match_score': match_result['skill_match_score'],
