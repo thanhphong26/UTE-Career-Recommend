@@ -303,7 +303,7 @@ async def get_available_skills():
 @router.get("/job/{job_id}/matching_resumes", response_model=ResumeRecommendationResponse)
 async def recommend_resumes_for_job(
     job_id: int,
-    limit: Optional[int] = 10,
+    limit: int,
     db: Session = Depends(get_db)
 ):
     """
@@ -339,7 +339,7 @@ async def recommend_resumes_for_job(
         
         for resume_id in resume_ids:
             # Truy vấn thông tin CV từ database
-            resume = db.query(ResumeCV).filter(ResumeCV.resume_id == resume_id).first()
+            resume = db.query(ResumeCV).filter(ResumeCV.resume_id == resume_id ).first()
             if not resume:
                 continue
                 
@@ -365,11 +365,13 @@ async def recommend_resumes_for_job(
             # Lấy thông tin student
             student = db.query(Student).filter(Student.student_id == resume.student_id).first()
             student_name = f"{student.user.first_name} {student.user.last_name}" if student else "Unknown"
+            student_image = student.profile_image if student and student.user else None
               # Tạo resume match response
             resume_match = {
                 'resume_id': resume_id,
                 'application_id': application_id,  # Thêm application_id vào response
                 'student_name': student_name,
+                'profile_image': student_image,
                 'match_score': match_result['match_score'],
                 'skill_match_score': match_result['skill_match_score'],
                 'content_similarity': match_result['content_similarity'],
