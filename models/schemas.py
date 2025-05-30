@@ -91,6 +91,7 @@ class ResumeJobMatchResponse(BaseModel):
     missing_skills: List[str]
     resume_title: str
     reason: str
+    application_status: Optional[str] = None
     
 class CVRecommendationResponse(BaseModel):
     recommendations: List[CVJobMatchResponse]

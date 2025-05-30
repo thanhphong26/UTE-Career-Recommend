@@ -323,12 +323,15 @@ async def recommend_resumes_for_job(
 
         # Lấy danh sách các CV đã apply vào job
         applications = db.query(Application).filter(
-            Application.job_id == job_id
+            Application.job_id == job_id,
+            Application.application_status.in_(["PENDING", "VIEWED", "REJECTED"])
         ).all()
 
         if not applications:
-            return {"recommendations": []}        # Lấy danh sách resume_id từ applications và map với application_id tương ứng
-        resume_app_map = {app.resume_id: app.application_id for app in applications if app.resume_id}
+            return {"recommendations": []}   
+         # Lấy danh sách resume_id từ applications và map với application_id tương ứng
+        resume_app_map = {app.resume_id: {"application_id": app.application_id, "application_status": app.application_status} 
+                          for app in applications if app.resume_id}
         resume_ids = list(resume_app_map.keys())
         
         if not resume_ids:
@@ -344,8 +347,9 @@ async def recommend_resumes_for_job(
                 continue
                 
             # Lấy application_id tương ứng với resume_id
-            application_id = resume_app_map.get(resume_id)
-
+            application_info = resume_app_map.get(resume_id)
+            application_id = application_info["application_id"]
+            application_status = application_info["application_status"]
             # Phân tích CV để lấy thông tin
             cv_analysis = cv_analyzer.analyze_cv(resume.resume_file)
             if not cv_analysis.get('success', False):
@@ -378,7 +382,8 @@ async def recommend_resumes_for_job(
                 'matched_skills': match_result['matched_skills'],
                 'missing_skills': match_result['missing_skills'],
                 'resume_title': resume.resume_title,
-                'reason': cv_recommender._generate_match_reason(match_result)
+                'reason': cv_recommender._generate_match_reason(match_result),
+                'application_status': application_status
             }
             
             resume_matches.append(resume_match)
