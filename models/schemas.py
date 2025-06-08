@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from typing import List, Optional
+from pydantic import BaseModel, Field
+from typing import List, Dict, Any, Optional
 from datetime import datetime
 
 class JobBase(BaseModel):
@@ -35,5 +35,66 @@ class RecommendationResponse(BaseModel):
     job_title: str
     logo: str 
     company_name: str
+    job_location: str
     job_min_salary: float
     job_max_salary: float
+    reason: str
+
+# CV Analysis Models
+class CVAnalysisRequest(BaseModel):
+    file_path: str
+    
+class CVAnalysisResponse(BaseModel):
+    success: bool
+    resume_id: Optional[int] = None
+    skills: Optional[List[str]] = []
+    education: Optional[List[Dict[str, Any]]] = []
+    experience: Optional[List[Dict[str, Any]]] = []
+    summary: Optional[str] = ""
+    industry: Optional[str] = ""
+    seniority: Optional[str] = ""
+    language: Optional[str] = "en"
+    error: Optional[str] = None
+    
+# CV Recommendation Models
+class CVRecommendationRequest(BaseModel):
+    resume_id: int
+    limit: Optional[int] = 10
+    
+class CVJobMatchResponse(BaseModel):
+    job_id: int
+    job_title: str
+    match_score: float
+    skill_match_score: Optional[float] = None
+    content_similarity: Optional[float] = None
+    matched_skills: List[str]
+    missing_skills: List[str]
+    company_name: str
+    logo: str
+    employer_id: int
+    category_id: int
+    level_id: int
+    job_location: str
+    job_min_salary: float
+    job_max_salary: float
+    reason: str
+
+class ResumeJobMatchResponse(BaseModel):
+    resume_id: int
+    application_id: Optional[int] = None
+    student_name: Optional[str] = None
+    profile_image: Optional[str] = None
+    match_score: float
+    skill_match_score: Optional[float] = None
+    content_similarity: Optional[float] = None
+    matched_skills: List[str]
+    missing_skills: List[str]
+    resume_title: str
+    reason: str
+    application_status: Optional[str] = None
+    
+class CVRecommendationResponse(BaseModel):
+    recommendations: List[CVJobMatchResponse]
+
+class ResumeRecommendationResponse(BaseModel):
+    recommendations: List[ResumeJobMatchResponse]

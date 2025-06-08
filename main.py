@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from config import AppConfig
 from models.database import init_db
-from api import recommendations
+from api import recommendations, cv_analysis
 
 # Configure logging
 logging.basicConfig(
@@ -34,6 +34,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(recommendations.router, prefix="/api")
+app.include_router(cv_analysis.router, prefix="/api")  # Thêm router mới
 
 # Database initialization on startup
 @app.on_event("startup")

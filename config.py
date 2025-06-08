@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+import logging
 
 # Load environment variables
 load_dotenv()
@@ -7,7 +8,7 @@ load_dotenv()
 class DatabaseConfig:
     SQLALCHEMY_DATABASE_URL = os.getenv(
         'DATABASE_URL', 
-        'mysql+pymysql://username:password@localhost/job_recommendation_db'
+        'mysql+pymysql://root:NnbUcPSBYNPJZCPuOdClwftCHMseuqUs@turntable.proxy.rlwy.net:37130/ute_career_bridge'
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     POOL_SIZE = int(os.getenv('DATABASE_POOL_SIZE', 10))
@@ -23,6 +24,22 @@ class AppConfig:
     DEFAULT_TOP_N = int(os.getenv('DEFAULT_TOP_N', 5))
     MAX_TOP_N = int(os.getenv('MAX_TOP_N', 10))
 
+    # Upload directories
+    UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
+    
+    # Create directories if they don't exist
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+
 class SecurityConfig:
     ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', '*').split(',')
     CORS_ALLOW_METHODS = os.getenv('CORS_ALLOW_METHODS', '*').split(',')
+
+class LoggingConfig:
+    LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
+    LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    LOG_FILE = os.getenv('LOG_FILE', 'app.log')
+    LOG_ENCODING = 'utf-8'  # Set UTF-8 encoding for log files
+
+# Combined configuration class for easy import
+class Config(DatabaseConfig, AppConfig, SecurityConfig, LoggingConfig):
+    pass
