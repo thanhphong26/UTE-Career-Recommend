@@ -98,7 +98,7 @@ class SimpleCVAnalyzer:
                     logger.warning("pytesseract not installed. OCR functions will not be available.")
                     
         # Đặt đường dẫn cho Poppler
-        self.poppler_path = r'D:\Python-Lib\Release-24.08.0-0\poppler-24.08.0\Library\bin'
+        self.poppler_path = r'C:\Project\App\poppler\Library\bin'
 
     
     def extract_text_from_pdf(self, file_path: str) -> str:

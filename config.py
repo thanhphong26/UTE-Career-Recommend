@@ -8,7 +8,7 @@ load_dotenv()
 class DatabaseConfig:
     SQLALCHEMY_DATABASE_URL = os.getenv(
         'DATABASE_URL', 
-        'mysql+pymysql://root:NnbUcPSBYNPJZCPuOdClwftCHMseuqUs@turntable.proxy.rlwy.net:37130/ute_career_bridge'
+        'mysql+pymysql://root:root@localhost:3306/ute_career_bridge'
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     POOL_SIZE = int(os.getenv('DATABASE_POOL_SIZE', 10))
